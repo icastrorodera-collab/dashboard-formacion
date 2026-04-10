@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Comercial · Cruz Roja Jarama</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:      #CC0000;
+    --red-dark: #8B0000;
+    --red-deep: #4A0000;
+    --ink:      #0D0D0D;
+    --muted:    #7A6A6A;
+    --surface:  #FAF7F5;
+    --card:     #FFFFFF;
+    --border:   #E8DEDE;
+    --accent:   #FF6B35;
+    --cream:    #FFF8F4;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--surface);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--red-deep);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 5%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(204,0,0,0.15);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 22px 28px 18px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    position: relative; z-index: 1;
+  }
+  .cross-logo {
+    width: 46px; height: 46px;
+    background: var(--red);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 26px; color: white;
+    font-weight: 900;
+  }
+  .header-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: white;
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+  }
+  .header-text p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 3px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .status-dot {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── QUICK PILLS ── */
+  .pills-bar {
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 28px;
+    flex-shrink: 0;
+  }
+  .pills-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pills-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  .pill {
+    padding: 5px 12px;
+    background: white;
+    border: 1.5px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--red-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Source Sans 3', sans-serif;
+    white-space: nowrap;
+  }
+  .pill:hover {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  /* ── MAIN CHAT AREA ── */
+  .chat-wrap {
+    flex: 1;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── MESSAGES ── */
+  .msg {
+    display: flex;
+    gap: 12px;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .msg.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .avatar.bot {
+    background: var(--red);
+    color: white;
+    font-size: 16px;
+  }
+  .avatar.user {
+    background: var(--ink);
+    color: white;
+    font-size: 12px;
+  }
+
+  .bubble {
+    max-width: 75%;
+    padding: 13px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .msg.bot .bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0 12px 12px 12px;
+    color: var(--ink);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .msg.user .bubble {
+    background: var(--red-deep);
+    border-radius: 12px 0 12px 12px;
+    color: white;
+  }
+  .bubble strong { font-weight: 700; }
+  .bubble em { color: var(--muted); font-style: italic; }
+  .bubble ul { margin: 8px 0 4px 18px; }
+  .bubble li { margin-bottom: 4px; }
+  .bubble .tag {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .bubble .highlight {
+    background: #FFF3E0;
+    border-left: 3px solid var(--accent);
+    padding: 8px 12px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: #5D3A00;
+  }
+  .timestamp {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+  .msg.user .timestamp { text-align: right; }
+
+  /* ── TYPING ── */
+  .typing-dots {
+    display: flex; gap: 5px; align-items: center; padding: 4px 0;
+  }
+  .typing-dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ── INPUT AREA ── */
+  .input-bar {
+    border-top: 1px solid var(--border);
+    padding: 16px 0 20px;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+  .input-bar-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  #user-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--ink);
+    outline: none;
+    resize: none;
+    min-height: 48px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+  }
+  #user-input:focus { border-color: var(--red); }
+  #user-input::placeholder { color: #C0B0B0; }
+
+  #send-btn {
+    width: 48px; height: 48px;
+    background: var(--red);
+    border: none;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  #send-btn:hover { background: var(--red-dark); }
+  #send-btn:active { transform: scale(0.95); }
+  #send-btn svg { width: 20px; height: 20px; fill: white; }
+  #send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+  .input-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    padding: 0 28px;
+  }
+
+  /* ── WELCOME ── */
+  .welcome-card {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    margin-bottom: 8px;
+  }
+  .welcome-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--red-dark);
+    margin-bottom: 8px;
+  }
+  .welcome-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .welcome-topics {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  }
+  .topic-chip {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--red-dark);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="cross-logo">✚</div>
+    <div class="header-text">
+      <h1>Asistente Comercial</h1>
+      <p>Cruz Roja Jarama · Primeros Auxilios para Empresas</p>
+    </div>
+    <div class="status-dot">
+      <div class="dot"></div>
+      <span>Activo</span>
+    </div>
+  </div>
+</header>
+
+<div class="pills-bar">
+  <div class="pills-inner">
+    <span class="pills-label">Preguntas rápidas:</span>
+    <button class="pill" onclick="quickAsk('¿Qué mensaje de venta uso para un laboratorio farmacéutico?')">💊 Laboratorio</button>
+    <button class="pill" onclick="quickAsk('Dame el mensaje para un colegio o centro educativo')">🏫 Educación</button>
+    <button class="pill" onclick="quickAsk('¿Cuántas empresas tengo en Tres Cantos con email?')">📊 BBDD Tres Cantos</button>
+    <button class="pill" onclick="quickAsk('¿Qué hago en la semana 1 del plan comercial?')">📅 Plan semana 1</button>
+    <button class="pill" onclick="quickAsk('Dame el guion completo de llamada fría')">📞 Guion llamada</button>
+    <button class="pill" onclick="quickAsk('¿Cuáles son los sectores prioritarios para vender primeros auxilios?')">🎯 Sectores prioritarios</button>
+    <button class="pill" onclick="quickAsk('¿Qué argumentos uso para vender a una empresa de construcción?')">🏗️ Construcción</button>
+  </div>
+</div>
+
+<div class="chat-wrap">
+  <div id="messages">
+    <div class="welcome-card">
+      <h2>Hola, soy tu asistente comercial ✚</h2>
+      <p>Conozco toda la información de tu plan de captación: los <strong>375 contactos de Tres Cantos y Colmenar Viejo</strong>, los mensajes de venta por sector, el plan comercial por fases, el guion de llamadas y los KPIs.</p>
+      <p style="margin-top:6px">Pregúntame lo que necesites para tu prospección de cursos de primeros auxilios.</p>
+      <div class="welcome-topics">
+        <span class="topic-chip">📊 Datos de la BBDD</span>
+        <span class="topic-chip">✉️ Mensajes por sector</span>
+        <span class="topic-chip">📅 Plan de acción</span>
+        <span class="topic-chip">📞 Guion de llamada</span>
+        <span class="topic-chip">🎯 Segmentación</span>
+        <span class="topic-chip">📈 KPIs y métricas</span>
+        <span class="topic-chip">🤝 Estrategia de cierre</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="input-bar">
+  <div class="input-bar-inner">
+    <textarea id="user-input" placeholder="Escribe tu pregunta... (ej: ¿Qué mensaje uso para un gimnasio?)" rows="1"></textarea>
+    <button id="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <div class="input-hint">Powered by Claude · Tu asistente conoce los 375 contactos, 13 sectores y el plan comercial completo</div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `Eres el asistente comercial de Cruz Roja Jarama, especializado en la venta consultiva de cursos de primeros auxilios para empresas de Tres Cantos y Colmenar Viejo (Madrid).
+
+Tienes acceso completo a la siguiente información:
+
+## BASE DE DATOS COMERCIAL
+- Total empresas con contacto: 375 (Tres Cantos: 166, Colmenar Viejo: 209)
+- Con teléfono: 369 (98%) — canal principal
+- Con email: 177 (47%)
+- Por tamaño: Gran empresa (50-200+): 34 | Mediana (10-50): 124 | PYME (5-10): 195 | Pequeña (1-5): 22
+
+## SEGMENTACIÓN EN TIERS
+- TIER 1 PRIORITARIO: 34 grandes empresas + 68 medianas de alto riesgo = 102 empresas. Ticket: 800-2.500€/grupo. Canal: email personalizado + llamada. Decision maker: RRHH/PRL.
+- TIER 2: 127 PYMEs riesgo medio + 56 medianas de oficinas = 183 empresas. Ticket: 200-800€/grupo. Canal: llamada + WhatsApp + LinkedIn.
+- TIER 3: 68 PYMEs de oficinas. Ticket: 150-400€. Canal: email masivo.
+- TIER 4: 22 pequeñas empresas. Solo jornadas abiertas o si contactan ellos.
+
+## SECTORES Y MENSAJES DE VENTA
+
+### 🏥 Salud y bienestar (20 empresas)
+Necesidad: Personal administrativo y auxiliar no formado en primeros auxilios. Emergencias en sala de espera sin personal clínico disponible.
+Argumento: Obligación Plan PRL, brecha de seguridad en zonas no clínicas.
+Asunto email: "¿Todo vuestro equipo sabe actuar en una emergencia? (No solo los sanitarios)"
+Mensaje: "Hola [Nombre], Me pongo en contacto porque trabajamos con centros sanitarios de la zona en formación en primeros auxilios. Sé que el personal clínico está muy preparado. Pero ¿qué ocurre cuando una emergencia sucede en recepción o sala de espera y el personal sanitario no está al alcance? El Plan de PRL obliga a que toda empresa tenga personal formado, independientemente del sector. Ofrecemos cursos presenciales (4-6h) con certificación oficial, en vuestras instalaciones. ¿Tienes 15 minutos esta semana? Un saludo, [Nombre] Cruz Roja Jarama"
+
+### 🏭 Industria y fabricación (21 empresas — Tres Cantos prioritario: PharmaMar, Takeda, laboratorios)
+Necesidad: Entornos de alto riesgo: maquinaria, químicos, riesgo eléctrico. Normativa PRL muy exigente.
+Argumento: Ley 31/1995 PRL reforzada, reducción de accidentes graves.
+Asunto email: "Formación en primeros auxilios para entornos industriales — Cruz Roja Jarama"
+Mensaje: "Hola [Nombre], En entornos industriales como el vuestro, la respuesta en los primeros minutos puede marcar la diferencia. Ofrecemos formación adaptada a vuestros riesgos: traumatismos por maquinaria, intoxicaciones, quemaduras y PCR. Cursos in-company, grupos reducidos, metodología 100% práctica. ¿Puedo enviarte una propuesta personalizada? Un saludo, Cruz Roja Jarama"
+
+### 🏗️ Construcción y mantenimiento (22 empresas)
+Necesidad: Sector con mayor tasa de accidentes laborales en España. Caídas, cortes, aplastamientos.
+Argumento: Requisito habitual en pliegos de contratación. Mayor accidentabilidad.
+Asunto email: "El sector de la construcción tiene la mayor tasa de accidentes — ¿estáis preparados?"
+Mensaje: "Hola [Nombre], Es el ámbito donde más valor tiene la formación en primeros auxilios. Caídas, cortes, golpes con maquinaria... tener a alguien formado puede evitar que una situación grave sea irreversible. Además, cada vez más promotoras exigen certificados de primeros auxilios en los pliegos de seguridad. Cursos adaptados al sector, en punto de obra, horario flexible. ¿Te puedo enviar una propuesta? Cruz Roja Jarama"
+
+### 🚗 Automoción y transporte (28 empresas)
+Necesidad: Riesgo en taller + clientes que sufren emergencias. Obligación CAP para transportistas.
+Argumento: Certificado de Aptitud Profesional incluye primeros auxilios. Riesgo en taller y atención al cliente.
+Asunto email: "¿Sabría actuar vuestro equipo ante un accidente en el taller o con un cliente?"
+Mensaje: "Hola [Nombre], En un taller los riesgos están presentes a diario: herramientas, fosos, elevadores, y la posibilidad de que un cliente sufra un malestar. Si tenéis conductores profesionales, el CAP contempla formación en primeros auxilios. Cursos de 4-6h en vuestras instalaciones, sin interferir con el taller. ¿Hablamos? Cruz Roja Jarama"
+
+### 🏫 Educación y formación (18 empresas)
+Necesidad: Menores de edad, alta densidad de personas. Obligación específica. Responsabilidad legal de docentes.
+Argumento: Normativa específica centros educativos. Alta exposición pública con menores.
+Asunto email: "Formación en primeros auxilios para centros educativos — porque los niños no esperan"
+Mensaje: "Hola [Nombre], En entornos educativos la respuesta ante una emergencia es crítica. Un atragantamiento, una caída, una convulsión pueden ocurrir en cualquier momento. La normativa obliga a centros educativos a tener personal formado. Cursos específicos para personal educativo, en vuestro centro, con certificación oficial Cruz Roja. ¿Lo hablamos? Cruz Roja Jarama"
+
+### ⚽ Deporte y ocio (14 empresas)
+Necesidad: Alta probabilidad de incidentes cardiovasculares. Obligación DEA en instalaciones deportivas.
+Argumento: Real Decreto obliga a DEA + personal formado. Cada minuto sin desfibrilación reduce supervivencia un 10%.
+Asunto email: "¿Sabría vuestro equipo usar el DEA? La ley os obliga — nosotros os formamos"
+Mensaje: "Hola [Nombre], Desde 2022 la normativa de la Comunidad de Madrid obliga a instalaciones deportivas a tener DEA y personal formado. En caso de parada cardíaca, cada minuto sin desfibrilación reduce las posibilidades un 10%. Nuestros cursos cubren RCP, DEA, lesiones deportivas y protocolos de emergencia. ¿Tenéis ya el DEA? ¿Está vuestro equipo formado? Cruz Roja Jarama"
+
+### 🍽️ Hostelería y restauración (10 empresas)
+Necesidad: Riesgo de atragantamiento, quemaduras, alergias en clientes. Alta rotación de personal.
+Argumento: La maniobra de Heimlich aplicada a tiempo salva vidas. Riesgo directo con clientes.
+Asunto email: "Un atragantamiento en vuestro restaurante: ¿sabría actuar vuestro equipo?"
+Mensaje: "Hola [Nombre], Un cliente se atraganta. Alguien sufre una reacción alérgica severa. Un empleado se quema en cocina. Son situaciones reales en hostelería. Curso de primeros auxilios para hostelería de 4 horas, en vuestro local, en el horario que más os convenga, con contenidos específicos del sector. ¿Os enviamos información? Cruz Roja Jarama"
+
+### ⚖️ Servicios jurídicos y financieros (63 empresas — el mayor sector)
+Necesidad: Obligación legal PRL igual que cualquier empresa. Baja percepción de riesgo pero alta obligación.
+Argumento: Cumplimiento PRL + imagen de empresa responsable. Fácil de implementar en oficina.
+Asunto email: "Primeros auxilios en el despacho: obligación legal que muchos bufetes tienen pendiente"
+Mensaje: "Hola [Nombre], Aunque en un despacho el riesgo no sea evidente, la obligación de tener personal formado en primeros auxilios aplica a cualquier empresa. Un infarto, una lipotimia... pueden ocurrir en cualquier entorno. Cursos de 4-5h en vuestras instalaciones, certificación Cruz Roja, 100% prácticos. Muchos despachos de la zona ya los están incorporando. ¿Os lo contamos? Cruz Roja Jarama"
+
+### 🏢 Oficinas y servicios empresariales (34 empresas)
+Necesidad: Obligación PRL poco conocida en oficinas. Coworkings: valor añadido para usuarios.
+Argumento: PRL obligatoria + diferenciación para coworkings.
+Asunto email: "¿Tiene vuestro equipo cubierta la formación en primeros auxilios? (Spoiler: es obligatorio)"
+Mensaje: "Hola [Nombre], La Ley de PRL obliga a todas las empresas a designar personas formadas en primeros auxilios. En empresas de servicios esto se cumple menos de lo que debería. Cursos ágiles (4-5h), en vuestras instalaciones, en un solo día. Si gestionáis coworking, es una formación que podéis ofrecer a vuestros usuarios. ¿Hablamos? Cruz Roja Jarama"
+
+### 🏨 Inmobiliario (19 empresas)
+Necesidad: Contacto frecuente con público en visitas. Responsabilidad en comunidades de propietarios.
+Argumento: Servicio de valor añadido para comunidades que gestionan. Responsabilidad civil.
+Asunto email: "Primeros auxilios para vuestro equipo — y una oportunidad para vuestros clientes"
+
+### ✈️ Turismo y viajes (12 empresas)
+Necesidad: Responsabilidad del acompañante en viajes grupales. Emergencias en destinos sin asistencia inmediata.
+Argumento: Diferenciación comercial. Responsabilidad legal en viajes grupales.
+Asunto email: "¿Está vuestro equipo preparado para una emergencia en un viaje grupal?"
+
+### 🐄 Agropecuario (13 empresas)
+Necesidad: Trabajo aislado con maquinaria. El 112 tarda más en llegar.
+Argumento: Aislamiento geográfico que retrasa emergencias. Alta accidentabilidad agrícola.
+Asunto email: "En el campo, los primeros auxilios son más urgentes que en ningún lado"
+
+### 🛒 Comercio y tiendas (40 empresas)
+Necesidad: Alta afluencia de público. Riesgo de incidentes con clientes.
+Argumento: Responsabilidad civil ante clientes. Obligación PRL para trabajadores.
+Asunto email: "¿Sabe vuestro equipo de tienda qué hacer si un cliente se pone mal?"
+
+## PLAN COMERCIAL EN 4 FASES
+
+### FASE 1 (Semanas 1-2) — TIER 1: Grandes y medianas de alto riesgo
+- Lunes: Investigar contacto RRHH/PRL en LinkedIn (30 min/empresa)
+- Martes: Email personalizado (máx. 10/día para mantener calidad)
+- Miércoles: Llamada de seguimiento a emails enviados el lunes
+- Jueves: Llamada fría a empresas solo con teléfono
+- Viernes: Registrar resultados en CRM/Excel
+
+### FASE 2 (Semanas 3-4) — TIER 2: Volumen PYMEs
+- Lunes-Martes: Campaña email por sector (20-25/día)
+- Miércoles: Llamadas a restaurantes, colegios y deporte (más urgencia)
+- Jueves: WhatsApp a PYMEs con móvil registrado (máx. 15/día)
+- Viernes: LinkedIn para medianas de oficinas (bufetes, consultoras)
+
+### FASE 3 (Semanas 5-6) — Nurturing y cierre
+- Seguimiento de interesados de Fases 1 y 2
+- Campaña "Caso de éxito" a leads sin respuesta
+- Solicitar referidos a primeros clientes (descuento 10%)
+- Jornada abierta gratuita de 2h (invitar 10-15 empresas indecisos)
+- Visita puerta a puerta al polígono industrial de Tres Cantos
+
+### FASE 4 (Mes 2+) — Fidelización y recurrencia
+- Programa de renovación (certificación caduca cada 2-3 años)
+- Newsletter trimestral de valor (actualización normativa PRL)
+- Programa "Empresa Segura" — distintivo Cruz Roja
+- Acuerdo con asociaciones empresariales de Tres Cantos y Colmenar
+- Acuerdo con mutuas de trabajo (Fremap, Asepeyo, Mutua Universal)
+
+## GUION DE LLAMADA FRÍA
+Apertura (0-10 seg): "Buenos días, ¿podría hablar con [responsable RRHH/gerente]? Le llamo de Cruz Roja Jarama, somos el centro de formación de Cruz Roja en la zona norte de Madrid."
+Gancho (10-30 seg): "Le llamo porque trabajamos con empresas de [sector] en [localidad] en formación en primeros auxilios, y he visto que [empresa] podría estar expuesto a [riesgo específico]. ¿Es usted quien gestiona este tipo de formación?"
+Propuesta (30-60 seg): "Ofrecemos cursos certificados in-company en sus instalaciones, en el horario que mejor les venga, adaptados a [sector]. ¿Tienen actualmente cubierta esta formación en el plan de prevención?"
+Si NO tienen: "Perfecto, entonces tiene sentido que hablemos. ¿Podría enviarle una propuesta personalizada? Solo necesito 15 minutos."
+Si YA tienen: "¿Recuerda cuándo fue la última formación? Las certificaciones tienen vigencia de 2-3 años. ¿Cuándo toca renovar?"
+Si NO interesa: "Lo entiendo. ¿Le parece bien si le dejo la información por email para cuando lo necesiten? La normativa PRL hace que tarde o temprano sea necesario."
+REGLA DE ORO: Nunca colgar sin un siguiente paso concreto.
+
+## KPIs OBJETIVO
+- Llamadas/semana: 30-40 (semanas 1-2), 40-50 (semanas 3-4), 50+ (mes 2)
+- Tasa contacto efectivo: 25-35%
+- Tasa de interés: 10-15%
+- Reuniones conseguidas: 3-5/semana inicial, 8-12/semana mes 2
+- Contratos cerrados: 1-2 (semanas 1-2), 4-6/mes (mes 2)
+- Ticket medio: 300-600€ inicial, 500-1.000€ mes 2
+- Facturación mensual objetivo: 2.000-4.000€ en mes 2
+
+## HERRAMIENTAS RECOMENDADAS
+- CRM: HubSpot gratuito o Excel de seguimiento
+- Email: corporativo @cruzroja.es con firma profesional
+- WhatsApp Business con perfil Cruz Roja Jarama
+- LinkedIn con título "Formación en Primeros Auxilios para Empresas | Cruz Roja Jarama"
+- Dossier PDF de 1 página con precio, contenidos y logo Cruz Roja
+- Google My Business optimizado para "cursos primeros auxilios Tres Cantos/Colmenar Viejo"
+- Alianza con gestorías locales como canal de referidos
+
+## INFORMACIÓN DEL CURSO
+- Duración: 4-8 horas según modalidad
+- Formato: In-company (en las instalaciones del cliente)
+- Certificación: Oficial Cruz Roja
+- Contenidos: RCP, DEA, Heimlich, traumatismos, quemaduras, protocolos de emergencia
+- Modalidad: Presencial, adaptado por sector
+- Precio orientativo: 150-2.500€ según grupo y empresa
+
+Responde siempre en español, de forma práctica y directa. Si te piden un mensaje de venta, dalo completo y listo para usar. Si te piden datos, sé preciso. Si te piden estrategia, sé concreto con pasos accionables. Usa emojis con moderación para estructurar mejor las respuestas. Nunca inventes datos que no tengas — si no sabes algo específico, indícalo claramente.`;
+
+let conversationHistory = [];
+
+function getTime() {
+  return new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+}
+
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^### (.*?)$/gm, '<strong style="color:var(--red-dark);font-size:13px;display:block;margin:10px 0 4px">$1</strong>')
+    .replace(/^## (.*?)$/gm, '<strong style="font-size:15px;display:block;margin:12px 0 6px">$1</strong>')
+    .replace(/^- (.*?)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+    .replace(/\n\n/g, '</p><p style="margin-top:8px">')
+    .replace(/\n/g, '<br>');
+}
+
+function addMessage(role, content, isTyping = false) {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${role}`;
+  avatar.textContent = role === 'bot' ? '✚' : 'TÚ';
+
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  if (isTyping) {
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    div.id = 'typing-indicator';
+  } else {
+    bubble.innerHTML = formatText(content);
+    const ts = document.createElement('div');
+    ts.className = 'timestamp';
+    ts.textContent = getTime();
+    right.appendChild(bubble);
+    right.appendChild(ts);
+  }
+
+  if (isTyping) {
+    right.appendChild(bubble);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(right);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const btn = document.getElementById('send-btn');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  btn.disabled = true;
+
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  const typingEl = addMessage('bot', '', true);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    removeTyping();
+
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      conversationHistory.push({ role: 'assistant', content: reply });
+      addMessage('bot', reply);
+    } else {
+      addMessage('bot', '⚠️ Ha ocurrido un error al obtener la respuesta. Por favor, inténtalo de nuevo.');
+    }
+  } catch (err) {
+    removeTyping();
+    addMessage('bot', '⚠️ No se ha podido conectar con el asistente. Comprueba tu conexión a internet e inténtalo de nuevo.');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+function quickAsk(question) {
+  document.getElementById('user-input').value = question;
+  sendMessage();
+}
+
+// Auto-resize textarea
+document.getElementById('user-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Enter to send (Shift+Enter for new line)
+document.getElementById('user-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+</script>
+</body>
+</html>
