@@ -204,6 +204,12 @@
   </form>
 </dialog>
 
+<dialog id="confirmDlg" style="width:min(420px,92vw)">
+  <div class="modal-head"><span>Confirmar</span></div>
+  <div style="padding:20px;font-size:15px" id="confirmMsg"></div>
+  <div class="modal-foot"><button type="button" class="btn ghost" onclick="this.closest('dialog').close()">Cancelar</button><button type="button" class="btn" id="confirmYes">Sí, continuar</button></div>
+</dialog>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -214,7 +220,7 @@ const MODALIDADES = ['Presencial','Online','Mixta'];
 let db = load();
 
 function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e){} }
 function load(){
   try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (d && d.personas) return d; } catch(e){}
   return demoData();
@@ -479,7 +485,7 @@ function openModal(title, html, onSave, onDelete){
   $('#modalTitle').textContent = title;
   $('#modalBody').innerHTML = html;
   $('#modalDelete').style.display = onDelete ? '' : 'none';
-  $('#modalDelete').onclick = () => { if (confirm('¿Seguro que quieres eliminarlo?')) { onDelete(); save(); modal.close(); render(); toast('Eliminado'); } };
+  $('#modalDelete').onclick = () => askConfirm('¿Seguro que quieres eliminarlo?', () => { onDelete(); save(); modal.close(); render(); toast('Eliminado'); });
   $('#modalForm').onsubmit = (ev) => {
     ev.preventDefault();
     const fd = new FormData($('#modalForm'));
@@ -537,8 +543,8 @@ function openInscripcion(id, personaId){
     (d) => {
       d.progreso = Math.min(100, Math.max(0, Number(d.progreso)||0));
       d.nota = d.nota==='' ? null : Number(d.nota);
-      if (d.estado==='completado'){ d.progreso=100; if(!d.fechaFin){ alert('Indica la fecha de finalización para marcarla como completada.'); return false; } }
-      if (d.fechaFin && d.fechaInicio && d.fechaFin < d.fechaInicio){ alert('La fecha de fin no puede ser anterior a la de inicio.'); return false; }
+      if (d.estado==='completado'){ d.progreso=100; if(!d.fechaFin){ toast('Indica la fecha de finalización para marcarla como completada.'); return false; } }
+      if (d.fechaFin && d.fechaInicio && d.fechaFin < d.fechaInicio){ toast('La fecha de fin no puede ser anterior a la de inicio.'); return false; }
       if (id) Object.assign(i,d); else db.inscripciones.push({ id:uid(), ...d });
     },
     id ? () => { db.inscripciones = db.inscripciones.filter(x=>x.id!==id); } : null);
@@ -557,9 +563,8 @@ function importJSON(ev){
   file.text().then(txt => {
     const d = JSON.parse(txt);
     if (!Array.isArray(d.personas) || !Array.isArray(d.cursos) || !Array.isArray(d.inscripciones)) throw new Error();
-    if (!confirm('Se reemplazarán los datos actuales. ¿Continuar?')) return;
-    db = d; save(); render(); toast('Datos restaurados');
-  }).catch(()=>alert('El archivo no es una copia de seguridad válida.')).finally(()=>ev.target.value='');
+    askConfirm('Se reemplazarán los datos actuales. ¿Continuar?', () => { db = d; save(); render(); toast('Datos restaurados'); });
+  }).catch(()=>toast('El archivo no es una copia de seguridad válida.')).finally(()=>ev.target.value='');
 }
 function exportCSV(){
   const cols = ['Persona','Email','Departamento','Curso','Categoría','Horas','Obligatorio','Estado','Progreso','Inicio','Fin','Nota','Caducidad'];
@@ -568,7 +573,12 @@ function exportCSV(){
     return [p.nombre,p.email,p.departamento,c.titulo,c.categoria,c.horas,c.obligatorio?'Sí':'No',ESTADOS[i.estado],i.progreso,i.fechaInicio,i.fechaFin,i.nota??'',f?f.toISOString().slice(0,10):''].map(q).join(';'); });
   download(`inscripciones_${new Date().toISOString().slice(0,10)}.csv`, '﻿'+[cols.map(q).join(';'),...rows].join('\n'), 'text/csv;charset=utf-8');
 }
-function resetDemo(){ if(confirm('Se borrarán los datos actuales y se cargarán datos de ejemplo. ¿Continuar?')){ db=demoData(); save(); render(); toast('Datos de ejemplo cargados'); } }
+function resetDemo(){ askConfirm('Se borrarán los datos actuales y se cargarán datos de ejemplo. ¿Continuar?', () => { db=demoData(); save(); render(); toast('Datos de ejemplo cargados'); }); }
+function askConfirm(msg, onYes){
+  const d = $('#confirmDlg'); $('#confirmMsg').textContent = msg;
+  $('#confirmYes').onclick = () => { d.close(); onYes(); };
+  d.showModal();
+}
 
 /* ================= INICIO ================= */
 ['#fInsTexto','#fInsEstado','#fInsCategoria','#fInsDepto'].forEach(s=>$(s).addEventListener('input', renderInscripciones));
